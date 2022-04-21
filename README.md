@@ -19,7 +19,7 @@ add setting provider in manifest and file_paths.xml in xml path to enable share 
     <files-path name="files" path="."/>
 </paths>
 
-add Apllication file and add this code to logging camera x error
+add Apllication file and add this code to logging camera x error and add dependency
 
 class MainApplication : Application(), CameraXConfig.Provider {
     override fun getCameraXConfig(): CameraXConfig {
@@ -27,3 +27,9 @@ class MainApplication : Application(), CameraXConfig.Provider {
             .setMinimumLoggingLevel(Log.ERROR).build()
     }
 }
+
+// CameraX core library
+def camerax_version = '1.1.0-beta03'
+implementation "androidx.camera:camera-core:$camerax_version"
+// CameraX Camera2 extensions
+implementation "androidx.camera:camera-camera2:$camerax_version"
