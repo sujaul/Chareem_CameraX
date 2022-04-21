@@ -6,19 +6,19 @@
     android:layoutDirection="ltr"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <com.android.example.cameraxbasic.facetracker.OverlayView
+    <com.chareem.camerax.cameraxbasic.facetracker.OverlayView
         android:id="@+id/tracking_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.android.example.cameraxbasic.utils.FlashSwitchView
+    <com.chareem.camerax.cameraxbasic.utils.FlashSwitchView
         android:layout_margin="@dimen/margin_xsmall"
         android:visibility="visible"
         android:id="@+id/flash_bt"
         android:layout_width="40dp"
         android:layout_height="40dp" />
 
-    <com.android.example.cameraxbasic.utils.CameraSoundView
+    <com.chareem.camerax.cameraxbasic.utils.CameraSoundView
         android:layout_margin="@dimen/margin_xsmall"
         android:visibility="visible"
         android:id="@+id/sound_bt"

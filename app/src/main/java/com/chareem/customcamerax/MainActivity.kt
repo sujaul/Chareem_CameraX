@@ -3,8 +3,8 @@ package com.chareem.customcamerax
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import com.android.example.cameraxbasic.ChareemCameraX
-import com.android.example.cameraxbasic.utils.CameraHelper
+import com.chareem.camerax.cameraxbasic.ChareemCameraX
+import com.chareem.camerax.cameraxbasic.utils.CameraHelper
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

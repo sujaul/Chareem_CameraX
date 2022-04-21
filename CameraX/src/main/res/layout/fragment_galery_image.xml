@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.android.example.cameraxbasic.utils.TouchImageView
+    <com.chareem.camerax.cameraxbasic.utils.TouchImageView
         android:id="@+id/image_thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

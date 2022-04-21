@@ -7,13 +7,16 @@
         <entry key="..\:/DK/CustomCameraX/CameraX/src/main/res/layout/camera_ui_container.xml" value="0.1" />
         <entry key="..\:/DK/CustomCameraX/CameraX/src/main/res/layout/fragment_camera.xml" value="0.1" />
         <entry key="..\:/DK/CustomCameraX/CameraX/src/main/res/layout/fragment_gallery.xml" value="0.1" />
+        <entry key="CameraX/src/main/res/drawable/button_round_corners.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/circle_frame_background.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/circle_frame_background_dark.xml" value="0.1" />
+        <entry key="CameraX/src/main/res/drawable/ic_photo.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/ic_volume_off_24.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/ic_volume_up.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/ic_volume_up_24.xml" value="0.1" />
         <entry key="CameraX/src/main/res/layout/camera_ui_container.xml" value="0.22" />
         <entry key="CameraX/src/main/res/layout/fragment_camera.xml" value="0.19375" />
+        <entry key="CameraX/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.1693840579710145" />
       </map>
     </option>
