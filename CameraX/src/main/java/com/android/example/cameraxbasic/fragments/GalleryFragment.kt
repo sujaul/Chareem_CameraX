@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
@@ -25,6 +26,7 @@ import com.android.example.cameraxbasic.utils.CameraHelper
 import com.android.example.cameraxbasic.utils.padWithDisplayCutout
 import com.android.example.cameraxbasic.utils.showImmersive
 import java.io.File
+import java.lang.Exception
 import java.util.*
 
 val EXTENSION_WHITELIST = arrayOf("JPG")
@@ -111,23 +113,29 @@ class GalleryFragment internal constructor() : Fragment() {
 
             mediaList.getOrNull(fragmentGalleryBinding.photoViewPager.currentItem)?.let { mediaFile ->
 
-                // Create a sharing intent
-                val intent = Intent().apply {
-                    // Infer media type from file extension
-                    val mediaType = MimeTypeMap.getSingleton()
+                try {
+                    // Create a sharing intent
+                    val intent = Intent().apply {
+                        // Infer media type from file extension
+                        val mediaType = MimeTypeMap.getSingleton()
                             .getMimeTypeFromExtension(mediaFile.extension)
-                    // Get URI from our FileProvider implementation
-                    val uri = FileProvider.getUriForFile(
+                        // Get URI from our FileProvider implementation
+                        val uri = FileProvider.getUriForFile(
                             view.context, requireContext().packageName+ ".provider", mediaFile)
-                    // Set the appropriate intent extra, type, action and flags
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    type = mediaType
-                    action = Intent.ACTION_SEND
-                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                }
+                        // Set the appropriate intent extra, type, action and flags
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        type = mediaType
+                        action = Intent.ACTION_SEND
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    }
 
-                // Launch the intent letting the user choose which app to share with
-                startActivity(Intent.createChooser(intent, getString(R.string.share_hint)))
+                    // Launch the intent letting the user choose which app to share with
+                    startActivity(Intent.createChooser(intent, getString(R.string.share_hint)))
+
+                } catch (e : Exception){
+                    e.printStackTrace()
+                    Toast.makeText(requireContext(), "Failed to share, please check your setting provider", Toast.LENGTH_LONG).show()
+                }
 
                 /*val uri = Uri.fromFile(mediaFile)
                 val mediaType = MimeTypeMap.getSingleton()
