@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ChareemCameraX.with(this)
-            .setCameraFacing(CameraHelper.FACING_BACK)
+            .setCameraFacing(CameraHelper.FACING_FRONT)
             .setFaceDetection(false)
             .setImageName("imageku")
             .setMockDetection(true)

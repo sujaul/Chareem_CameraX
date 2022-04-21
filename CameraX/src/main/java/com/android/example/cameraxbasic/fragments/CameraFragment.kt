@@ -7,6 +7,7 @@ import android.content.*
 import android.content.res.Configuration
 import android.graphics.*
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.hardware.display.DisplayManager
 import android.location.Address
 import android.location.Location
@@ -50,6 +51,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
@@ -228,6 +231,8 @@ class CameraFragment : Fragment(), CameraUpdate,
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
                     .priority(Priority.HIGH)
+                    .placeholder(R.drawable.ic_photo)
+                    .error(R.drawable.ic_photo)
                     .circleCrop()
                 Glide.with(photoViewButton)
                     .load(uri)
@@ -346,7 +351,7 @@ class CameraFragment : Fragment(), CameraUpdate,
 
         // ImageCapture
         imageCapture = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             // We request aspect ratio but no resolution to match preview config, but letting
             // CameraX optimize for whatever specific resolution best fits our use cases
             .setTargetAspectRatio(screenAspectRatio)
@@ -575,10 +580,10 @@ class CameraFragment : Fragment(), CameraUpdate,
                             Log.d(TAG, "Photo capture succeeded: $savedUri")
 
                             // We can only change the foreground Drawable using API level 23+ API
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                           /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 // Update the gallery thumbnail with latest picture taken
                                 setGalleryThumbnail(savedUri)
-                            }
+                            }*/
 
                             // Implicit broadcasts will be ignored for devices running API level >= 24
                             // so if you only target API level 24+ you can remove this statement
@@ -603,8 +608,24 @@ class CameraFragment : Fragment(), CameraUpdate,
 
                             val handler = Handler(Looper.getMainLooper())
                             handler.post {
-                                startAndValidatePreview(savedUri.toFile().absolutePath)
+                                val options: RequestOptions = RequestOptions()
+                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                    .skipMemoryCache(true)
+                                    .priority(Priority.HIGH)
+                                    .placeholder(R.drawable.ic_photo)
+                                    .error(R.drawable.ic_photo)
+                                Glide.with(contexts)
+                                    .asBitmap()
+                                    .load(savedUri)
+                                    .apply(options)
+                                    .into(object : CustomTarget<Bitmap?>() {
+                                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap?>?) {
+                                           startAndValidatePreview(savedUri.toFile().absolutePath, resource)
+                                        }
+                                        override fun onLoadCleared(placeholder: Drawable?) {}
+                                    })
                             }
+                            setGalleryThumbnail(savedUri)
                             setEnabledView(true)
                         }
                     })
@@ -1199,10 +1220,11 @@ class CameraFragment : Fragment(), CameraUpdate,
         dialogsMock?.show()
     }
 
-    private fun startAndValidatePreview(selectedImage: String){
-        var bitmap: Bitmap = Utils.rotateImageIfRequired(selectedImage, contexts);
-        val bmp = Utils.resize(bitmap, 1280, 1280)
-        if (bmp != null) bitmap = bmp
+    private fun startAndValidatePreview(selectedImage: String, bmp: Bitmap){
+        //var bitmap: Bitmap = Utils.rotateImageIfRequired(selectedImage, contexts)
+        var bitmap: Bitmap = bmp
+        val bmps = Utils.resize(bitmap, 1280, 1280)
+        if (bmps != null) bitmap = bmps
         if (act.isUseFaceDetection()) {
             val image = InputImage.fromBitmap(bitmap, 0)
             faceDetector?.process(image)
@@ -1218,11 +1240,6 @@ class CameraFragment : Fragment(), CameraUpdate,
                     }
                     if (faces.size == 0) {
                         showToast("No face detected, please point the camera in to a face")
-                        if (act.isUseTimeStamp() && addressText.isNotEmpty()){
-                            Utils.saveBitmap(selectedImage, bitmap){
-                                if (!it) return@saveBitmap
-                            }
-                        }
                         return@OnSuccessListener
                     }
                     if (true == outputDirectory.listFiles()?.isNotEmpty()) {

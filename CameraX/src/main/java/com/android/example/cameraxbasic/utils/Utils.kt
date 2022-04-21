@@ -16,6 +16,7 @@
 
 package com.android.example.cameraxbasic.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
@@ -27,6 +28,8 @@ import android.os.Build
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.util.Log
+import androidx.camera.core.impl.utils.Exif
 import androidx.core.content.res.ResourcesCompat
 import androidx.exifinterface.media.ExifInterface
 import com.android.example.cameraxbasic.R
@@ -144,19 +147,25 @@ object Utils{
         }
     }
 
+    @SuppressLint("RestrictedApi")
     @Throws(IOException::class)
     fun rotateImageIfRequired(selectedImage: String, context: Context): Bitmap {
         val bmOptions = BitmapFactory.Options()
         val bitmap = BitmapFactory.decodeFile(selectedImage, bmOptions)
         val input = context.contentResolver.openInputStream(Uri.fromFile(File(selectedImage)))
-        val ei: ExifInterface
-        ei =
-            if (Build.VERSION.SDK_INT > 23) ExifInterface(input!!) else ExifInterface(
+       /* val ei: ExifInterface = if (Build.VERSION.SDK_INT > 23) ExifInterface(input!!) else ExifInterface(
                 selectedImage
-            )
-        val orientation =
-            ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
-        return when (orientation) {
+            )*/
+        val exif = Exif.createFromInputStream(input!!)
+        val orientation = exif.rotation
+        Log.d("lsklkdlkd", orientation.toString())
+       /* val orientation =
+            ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)*/
+        return rotateImage(
+            bitmap,
+            orientation.toFloat()
+        )
+        /*return when (orientation) {
             ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(
                 bitmap,
                 90f
@@ -170,7 +179,7 @@ object Utils{
                 270f
             )
             else -> bitmap
-        }
+        }*/
     }
 
     fun rotateImage(source: Bitmap, angle: Float): Bitmap {
