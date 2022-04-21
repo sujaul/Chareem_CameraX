@@ -30,6 +30,7 @@
             android:screenOrientation="fullUser"
             android:rotationAnimation="seamless"
             android:resizeableActivity="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             tools:targetApi="O">
             <!--<intent-filter>

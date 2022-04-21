@@ -115,7 +115,7 @@ class ChareemCameraX{
                                 cameraIntent.putExtra(CameraHelper.Arguments.CAMERA_FACING_TYPE, cameraType)
                                 cameraIntent.putExtra(CameraHelper.Arguments.FACE_DETECTION, isUseFaceDetection)
                                 cameraIntent.putExtra(CameraHelper.Arguments.IMAGE_NAME, fileName)
-                                context.startActivity(cameraIntent)
+                                context.startActivityForResult(cameraIntent, CameraHelper.RESULT_CODE)
                             } else {
                                 Log.d("akdkodko", "finish")
                                 Toast.makeText(
