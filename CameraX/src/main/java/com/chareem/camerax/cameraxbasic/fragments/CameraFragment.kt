@@ -194,6 +194,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                 }
             }
         }
+        setEnabledView(true)
     }
 
     override fun onDestroyView() {
@@ -626,7 +627,6 @@ class CameraFragment : Fragment(), CameraUpdate,
                                     })
                             }
                             setGalleryThumbnail(savedUri)
-                            setEnabledView(true)
                         }
                     })
 
@@ -845,7 +845,7 @@ class CameraFragment : Fragment(), CameraUpdate,
             // Call all listeners with new value
             listeners.forEach { it(luma) }
 
-            if (changeCount % 10 == 0 && act.isUseFaceDetection()) {
+            if (changeCount % 6 == 0 && act.isUseFaceDetection()) {
                 val bytes = ByteArray(buffer.remaining())
                 buffer.get(bytes)
                 val img: Image? = image.image
@@ -1248,6 +1248,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                         ).navigate(CameraFragmentDirections
                             .actionCameraToGallery(outputDirectory.absolutePath, selectedImage))
                     }
+                    setEnabledView(true)
                 })?.addOnFailureListener { e -> // Task failed with an exception
                     if (act.isUseTimeStamp() && addressText.isNotEmpty()){
                         bitmap = Utils.drawMultilineTextToBitmap(contexts, bitmap, addressText, 10);
@@ -1258,6 +1259,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                             return@saveBitmap
                         }
                     }
+                    setEnabledView(true)
                     showToast("No face detected, please point the camera in to a face")
                     e.printStackTrace()
                 }
@@ -1277,6 +1279,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                 ).navigate(CameraFragmentDirections
                     .actionCameraToGallery(outputDirectory.absolutePath, selectedImage))
             }
+            setEnabledView(true)
         }
     }
 
