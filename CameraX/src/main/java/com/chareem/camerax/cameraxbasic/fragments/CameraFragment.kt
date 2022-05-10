@@ -109,6 +109,7 @@ class CameraFragment : Fragment(), CameraUpdate,
     private var dialogsMock: AlertDialog? = null
     private var addressText = ""
     private lateinit var contexts: Context
+    private lateinit var activity: Activity
 
     private lateinit var act : CameraXActivity
 
@@ -158,6 +159,7 @@ class CameraFragment : Fragment(), CameraUpdate,
     override fun onAttach(context: Context) {
         super.onAttach(context)
         contexts = context
+        activity = requireActivity()
         act = requireActivity() as CameraXActivity
         /*requireActivity()
             .onBackPressedDispatcher
@@ -180,7 +182,7 @@ class CameraFragment : Fragment(), CameraUpdate,
         // Make sure that all permissions are still present, since the
         // user could have removed them while the app was in paused state.
         if (!PermissionsFragment.hasPermissions(contexts)) {
-            Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
+            Navigation.findNavController(activity, R.id.fragment_container).navigate(
                 CameraFragmentDirections.actionCameraToPermissions()
             )
         } else {
@@ -190,7 +192,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                 gps?.let {
                     if (gps?.hasLocationEnabled() == true) {
                         initLocation()
-                    } else gps?.openSettings(requireActivity())
+                    } else gps?.openSettings(activity)
                 }
             }
         }
@@ -589,7 +591,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                             // Implicit broadcasts will be ignored for devices running API level >= 24
                             // so if you only target API level 24+ you can remove this statement
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                                requireActivity().sendBroadcast(
+                                contexts.sendBroadcast(
                                     Intent(android.hardware.Camera.ACTION_NEW_PICTURE, savedUri)
                                 )
                             }
@@ -621,12 +623,11 @@ class CameraFragment : Fragment(), CameraUpdate,
                                     .apply(options)
                                     .into(object : CustomTarget<Bitmap?>() {
                                         override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap?>?) {
-                                           startAndValidatePreview(savedUri.toFile().absolutePath, resource)
+                                           startAndValidatePreview(savedUri, savedUri.toFile().absolutePath, resource)
                                         }
                                         override fun onLoadCleared(placeholder: Drawable?) {}
                                     })
                             }
-                            setGalleryThumbnail(savedUri)
                         }
                     })
 
@@ -678,7 +679,7 @@ class CameraFragment : Fragment(), CameraUpdate,
             // Only navigate when the gallery has photos
             if (true == outputDirectory.listFiles()?.isNotEmpty()) {
                 Navigation.findNavController(
-                    requireActivity(), R.id.fragment_container
+                    activity, R.id.fragment_container
                 ).navigate(CameraFragmentDirections
                     .actionCameraToGallery(outputDirectory.absolutePath, ""))
             }
@@ -1108,7 +1109,7 @@ class CameraFragment : Fragment(), CameraUpdate,
 
     private fun updateResults(currTimestamp: Long, mappedRecognitions: List<Recognition>) {
         //adding = false;
-        requireActivity().runOnUiThread(
+        activity.runOnUiThread(
             Runnable {
                 computingDetection = false
                 tracker!!.trackResults(mappedRecognitions, currTimestamp)
@@ -1129,7 +1130,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                 currLon = gps!!.longitude.toString() + ""
                 if (act.isUseMockDetection()) {
                     if (Utils.isMockLocationOn(gps!!.location)) {
-                        showDialogMock(requireActivity())
+                        showDialogMock(activity)
                         return
                     }
                 }
@@ -1146,7 +1147,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                     currLon = location.longitude.toString() + ""
                     if (act.isUseMockDetection()) {
                         if (Utils.isMockLocationOn(location)) {
-                            showDialogMock(requireActivity())
+                            showDialogMock(activity)
                             return
                         }
                     }
@@ -1220,7 +1221,7 @@ class CameraFragment : Fragment(), CameraUpdate,
         dialogsMock?.show()
     }
 
-    private fun startAndValidatePreview(selectedImage: String, bmp: Bitmap){
+    private fun startAndValidatePreview(savedUri: Uri, selectedImage: String, bmp: Bitmap){
         //var bitmap: Bitmap = Utils.rotateImageIfRequired(selectedImage, contexts)
         var bitmap: Bitmap = bmp
         val bmps = Utils.resize(bitmap, 1280, 1280)
@@ -1235,16 +1236,19 @@ class CameraFragment : Fragment(), CameraUpdate,
                     Utils.saveBitmap(selectedImage, bitmap){
                         if (!it) {
                             showToast("Save image failed")
+                            setEnabledView(true)
                             return@saveBitmap
                         }
                     }
                     if (faces.size == 0) {
+                        setEnabledView(true)
                         showToast("No face detected, please point the camera in to a face")
                         return@OnSuccessListener
                     }
+                    setGalleryThumbnail(savedUri)
                     if (true == outputDirectory.listFiles()?.isNotEmpty()) {
                         Navigation.findNavController(
-                            requireActivity(), R.id.fragment_container
+                            activity, R.id.fragment_container
                         ).navigate(CameraFragmentDirections
                             .actionCameraToGallery(outputDirectory.absolutePath, selectedImage))
                     }
@@ -1256,6 +1260,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                     Utils.saveBitmap(selectedImage, bitmap){
                         if (!it) {
                             showToast("Save image failed")
+                            setEnabledView(true)
                             return@saveBitmap
                         }
                     }
@@ -1264,22 +1269,24 @@ class CameraFragment : Fragment(), CameraUpdate,
                     e.printStackTrace()
                 }
         } else {
+            setGalleryThumbnail(savedUri)
             if (true == outputDirectory.listFiles()?.isNotEmpty()) {
                 if (act.isUseTimeStamp() && addressText.isNotEmpty()){
                     bitmap = Utils.drawMultilineTextToBitmap(contexts, bitmap, addressText, 10);
                 }
                 Utils.saveBitmap(selectedImage, bitmap){
                     if (!it) {
+                        setEnabledView(true)
                         showToast("Save image failed")
                         return@saveBitmap
                     }
                 }
                 Navigation.findNavController(
-                    requireActivity(), R.id.fragment_container
+                    activity, R.id.fragment_container
                 ).navigate(CameraFragmentDirections
                     .actionCameraToGallery(outputDirectory.absolutePath, selectedImage))
-            }
-            setEnabledView(true)
+                setEnabledView(true)
+            } else setEnabledView(true)
         }
     }
 
