@@ -182,6 +182,32 @@ object Utils{
         }*/
     }
 
+    @SuppressLint("RestrictedApi")
+    @Throws(IOException::class)
+    fun rotateImageIfRequired(bitmap: Bitmap, selectedImage: String, context: Context): Bitmap {
+        val input = context.contentResolver.openInputStream(Uri.fromFile(File(selectedImage)))
+        val ei: ExifInterface = if (Build.VERSION.SDK_INT > 23) ExifInterface(input!!) else ExifInterface(
+                 selectedImage
+             )
+         val orientation =
+             ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
+        return when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(
+                bitmap,
+                90f
+            )
+            ExifInterface.ORIENTATION_ROTATE_180 -> rotateImage(
+                bitmap,
+                180f
+            )
+            ExifInterface.ORIENTATION_ROTATE_270 -> rotateImage(
+                bitmap,
+                270f
+            )
+            else -> bitmap
+        }
+    }
+
     fun rotateImage(source: Bitmap, angle: Float): Bitmap {
         val matrix = Matrix()
         matrix.postRotate(angle)

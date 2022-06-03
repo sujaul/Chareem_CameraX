@@ -611,7 +611,8 @@ class CameraFragment : Fragment(), CameraUpdate,
 
                             val handler = Handler(Looper.getMainLooper())
                             handler.post {
-                                val options: RequestOptions = RequestOptions()
+                                val options = RequestOptions()
+                                    .transform()
                                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                                     .skipMemoryCache(true)
                                     .priority(Priority.HIGH)
@@ -992,7 +993,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                 imageProxy.close()
             }
         } ?: imageProxy.close()
-        Trace.endSection()
+        //Trace.endSection()
     }
 
     private fun onFacesDetected(currTimestamp: Long, faces: List<Face>) {
@@ -1222,7 +1223,7 @@ class CameraFragment : Fragment(), CameraUpdate,
     }
 
     private fun startAndValidatePreview(savedUri: Uri, selectedImage: String, bmp: Bitmap){
-        //var bitmap: Bitmap = Utils.rotateImageIfRequired(selectedImage, contexts)
+        //var bitmap: Bitmap = Utils.rotateImageIfRequired(bmp, selectedImage, contexts)
         var bitmap: Bitmap = bmp
         val bmps = Utils.resize(bitmap, 1280, 1280)
         if (bmps != null) bitmap = bmps
@@ -1230,6 +1231,7 @@ class CameraFragment : Fragment(), CameraUpdate,
             val image = InputImage.fromBitmap(bitmap, 0)
             faceDetector?.process(image)
                 ?.addOnSuccessListener(OnSuccessListener { faces ->
+                    bitmap = Utils.rotateImageIfRequired(bitmap, selectedImage, contexts)
                     if (act.isUseTimeStamp() && addressText.isNotEmpty()){
                         bitmap = Utils.drawMultilineTextToBitmap(contexts, bitmap, addressText, 10);
                     }
@@ -1271,6 +1273,7 @@ class CameraFragment : Fragment(), CameraUpdate,
         } else {
             setGalleryThumbnail(savedUri)
             if (true == outputDirectory.listFiles()?.isNotEmpty()) {
+                bitmap = Utils.rotateImageIfRequired(bitmap, selectedImage, contexts)
                 if (act.isUseTimeStamp() && addressText.isNotEmpty()){
                     bitmap = Utils.drawMultilineTextToBitmap(contexts, bitmap, addressText, 10);
                 }
