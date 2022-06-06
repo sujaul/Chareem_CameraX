@@ -1231,7 +1231,7 @@ class CameraFragment : Fragment(), CameraUpdate,
             val image = InputImage.fromBitmap(bitmap, 0)
             faceDetector?.process(image)
                 ?.addOnSuccessListener(OnSuccessListener { faces ->
-                    bitmap = Utils.rotateImageIfRequired(bitmap, selectedImage, contexts)
+                    //bitmap = Utils.rotateImageIfRequired(bitmap, selectedImage, contexts)
                     if (act.isUseTimeStamp() && addressText.isNotEmpty()){
                         bitmap = Utils.drawMultilineTextToBitmap(contexts, bitmap, addressText, 10);
                     }
@@ -1273,7 +1273,7 @@ class CameraFragment : Fragment(), CameraUpdate,
         } else {
             setGalleryThumbnail(savedUri)
             if (true == outputDirectory.listFiles()?.isNotEmpty()) {
-                bitmap = Utils.rotateImageIfRequired(bitmap, selectedImage, contexts)
+                //bitmap = Utils.rotateImageIfRequired(bitmap, selectedImage, contexts)
                 if (act.isUseTimeStamp() && addressText.isNotEmpty()){
                     bitmap = Utils.drawMultilineTextToBitmap(contexts, bitmap, addressText, 10);
                 }
