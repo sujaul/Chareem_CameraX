@@ -26,25 +26,17 @@ class ChareemCameraX{
     private var isUseMockDetection = false
     private var isUseTimestamp = false
     private var fileName = ""
-    var mCcontext: Activity? = null
-    lateinit var mInstance: ChareemCameraX
+    private var dirName = ""
+    private var resultCode = CameraHelper.RESULT_CODE
+    private var mCcontext: Activity? = null
+    private lateinit var mInstance: ChareemCameraX
     companion object {
         fun with(context: Activity) : ChareemCameraX{
             val instance = ChareemCameraX()
-            instance.setInstnace(instance)
-            instance.setContext(context)
+            instance.mInstance = instance
+            instance.mCcontext = context
             return instance
         }
-    }
-
-    fun setInstnace(instance: ChareemCameraX): ChareemCameraX{
-        mInstance = instance
-        return mInstance
-    }
-
-    fun setContext(context: Activity): ChareemCameraX{
-        mCcontext = context
-        return mInstance
     }
 
     fun setCameraFacing(cameraTypes: Int): ChareemCameraX {
@@ -63,6 +55,11 @@ class ChareemCameraX{
         return mInstance
     }
 
+    fun setDirectoryName(dirNames: String): ChareemCameraX {
+        dirName = dirNames
+        return mInstance
+    }
+
     fun setMockDetection(isUseMockDetections: Boolean): ChareemCameraX {
         isUseMockDetection = isUseMockDetections
         return mInstance
@@ -75,6 +72,11 @@ class ChareemCameraX{
 
     fun setImageName(imageName: String): ChareemCameraX {
         fileName = imageName
+        return mInstance
+    }
+
+    fun setResultCode(resultCodes: Int): ChareemCameraX {
+        resultCode = resultCodes
         return mInstance
     }
 
@@ -115,7 +117,8 @@ class ChareemCameraX{
                                 cameraIntent.putExtra(CameraHelper.Arguments.CAMERA_FACING_TYPE, cameraType)
                                 cameraIntent.putExtra(CameraHelper.Arguments.FACE_DETECTION, isUseFaceDetection)
                                 cameraIntent.putExtra(CameraHelper.Arguments.IMAGE_NAME, fileName)
-                                context.startActivityForResult(cameraIntent, CameraHelper.RESULT_CODE)
+                                cameraIntent.putExtra(CameraHelper.Arguments.DIR_NAME, dirName)
+                                context.startActivityForResult(cameraIntent, resultCode)
                             } else {
                                 Log.d("akdkodko", "finish")
                                 Toast.makeText(
@@ -169,6 +172,7 @@ class ChareemCameraX{
             cameraIntent.putExtra(CameraHelper.Arguments.CAMERA_FACING_TYPE, cameraType)
             cameraIntent.putExtra(CameraHelper.Arguments.FACE_DETECTION, isUseFaceDetection)
             cameraIntent.putExtra(CameraHelper.Arguments.IMAGE_NAME, fileName)
+            cameraIntent.putExtra(CameraHelper.Arguments.DIR_NAME, dirName)
             return cameraIntent
         }
         Toast.makeText(context, "Error camera occurred, you have no camera", Toast.LENGTH_SHORT)

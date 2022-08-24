@@ -51,6 +51,8 @@ class CameraXActivity : AppCompatActivity() {
             isUseTimestamp = bundle.getBoolean(CameraHelper.Arguments.SHOW_LOCATION, false)
         if (bundle.containsKey(CameraHelper.Arguments.IMAGE_NAME))
             imageName = bundle.getString(CameraHelper.Arguments.IMAGE_NAME, "")
+        if (bundle.containsKey(CameraHelper.Arguments.DIR_NAME))
+            dirName = bundle.getString(CameraHelper.Arguments.DIR_NAME, "")
     }
 
     override fun onResume() {
@@ -86,16 +88,6 @@ class CameraXActivity : AppCompatActivity() {
     }
 
     companion object {
-
-        /** Use external media if it is available, our app's file directory otherwise */
-        fun getOutputDirectory(context: Context): File {
-            val appContext = context.applicationContext
-            val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
-                File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() } }
-            return if (mediaDir != null && mediaDir.exists())
-                mediaDir else appContext.filesDir
-        }
-
         private var cameraType = CameraHelper.FACING_BACK
         private var latitude = ""
         private var longitude = ""
@@ -103,6 +95,16 @@ class CameraXActivity : AppCompatActivity() {
         private var isUseMockDetection = false
         private var isUseTimestamp = false
         private var imageName = ""
+        private var dirName = ""
+
+        /** Use external media if it is available, our app's file directory otherwise */
+        fun getOutputDirectory(context: Context): File {
+            val appContext = context.applicationContext
+            val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
+                File(it, dirName.ifEmpty { appContext.resources.getString(R.string.app_name) }).apply { mkdirs() } }
+            return if (mediaDir != null && mediaDir.exists())
+                mediaDir else appContext.filesDir
+        }
     }
 
     private fun hideSystemUI() {

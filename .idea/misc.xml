@@ -14,6 +14,7 @@
         <entry key="CameraX/src/main/res/drawable/ic_volume_off_24.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/ic_volume_up.xml" value="0.1" />
         <entry key="CameraX/src/main/res/drawable/ic_volume_up_24.xml" value="0.1" />
+        <entry key="CameraX/src/main/res/layout/activity_camerax.xml" value="0.121875" />
         <entry key="CameraX/src/main/res/layout/camera_ui_container.xml" value="0.2" />
         <entry key="CameraX/src/main/res/layout/fragment_camera.xml" value="0.19375" />
         <entry key="CameraX/src/main/res/layout/fragment_galery_image.xml" value="0.1" />

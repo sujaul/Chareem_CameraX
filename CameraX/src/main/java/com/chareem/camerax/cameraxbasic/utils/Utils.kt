@@ -139,6 +139,12 @@ object Utils{
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
             out.flush()
             out.close()
+        } catch (e: IOException) {
+            listener(false)
+            e.printStackTrace()
+        } catch (e: OutOfMemoryError) {
+            listener(false)
+            e.printStackTrace()
         } catch (e: java.lang.Exception) {
             listener(false)
             e.printStackTrace()

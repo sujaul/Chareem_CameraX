@@ -26,5 +26,6 @@ object CameraHelper{
         val CAMERA_FACING_TYPE = "com.chareem.chareemCamera.camera_facing_type"
         val FACE_DETECTION = "com.chareem.chareemCamera.face_detection"
         val IMAGE_NAME = "com.chareem.chareemCamera.image_name"
+        val DIR_NAME = "com.chareem.chareemCamera.dir_name"
     }
 }

@@ -82,7 +82,7 @@ typealias LumaListener = (luma: Double) -> Unit
  * - Photo taking
  * - Image analysis
  */
-class CameraFragment : Fragment(), CameraUpdate,
+class CameraFragment : Fragment(),
     CameraSoundView.OnSoundTypeChangeListener,
     FlashSwitchView.FlashModeSwitchListener {
 
@@ -376,11 +376,11 @@ class CameraFragment : Fragment(), CameraUpdate,
             .build()
             // The analyzer can then be assigned to the instance
             .also {
-                it.setAnalyzer(cameraExecutor, LuminosityAnalyzer(this, act) { luma ->
+                it.setAnalyzer(cameraExecutor, LuminosityAnalyzer{
                     // Values returned from our analyzer are passed to the attached listener
                     // We log image analysis results here - you should do something useful
                     // instead!
-                    Log.d(TAG, "Average luminosity: $luma")
+                    Log.d(TAG, "Average luminosity: $it")
                 })
             }
 
@@ -737,14 +737,12 @@ class CameraFragment : Fragment(), CameraUpdate,
      * <p>All we need to do is override the function `analyze` with our desired operations. Here,
      * we compute the average luminosity of the image by looking at the Y plane of the YUV frame.
      */
-    private class LuminosityAnalyzer(cameraUpdate: CameraUpdate, act : CameraXActivity, listener: LumaListener? = null) : ImageAnalysis.Analyzer {
+    inner class LuminosityAnalyzer(listener: LumaListener? = null) : ImageAnalysis.Analyzer {
         private var changeCount = 0
         private val frameRateWindow = 8
         private val frameTimestamps = ArrayDeque<Long>(5)
-        private val act = CameraXActivity()
         private val listeners = ArrayList<LumaListener>().apply { listener?.let { add(it) } }
         private var lastAnalyzedTimestamp = 0L
-        private val cameraUpdates = cameraUpdate
         var framesPerSecond: Double = -1.0
             private set
 
@@ -852,7 +850,7 @@ class CameraFragment : Fragment(), CameraUpdate,
                 buffer.get(bytes)
                 val img: Image? = image.image
                 val bitmap = img?.toBitmap()
-                cameraUpdates.onBitmapTracking(bitmap, image)
+                updateFace(bitmap, image)
             } else image.close()
         }
     }
@@ -1118,10 +1116,6 @@ class CameraFragment : Fragment(), CameraUpdate,
             })
     }
 
-    override fun onBitmapTracking(bitmap: Bitmap?, imageProxy: ImageProxy) {
-        updateFace(bitmap, imageProxy)
-    }
-
     private fun initLocation() {
         val timeout = 60000
         gps?.beginUpdates()
@@ -1224,6 +1218,15 @@ class CameraFragment : Fragment(), CameraUpdate,
 
     private fun startAndValidatePreview(savedUri: Uri, selectedImage: String, bmp: Bitmap){
         //var bitmap: Bitmap = Utils.rotateImageIfRequired(bmp, selectedImage, contexts)
+        if (act.isUseTimeStamp() && addressText.isEmpty()){
+            showToast("Locaton not found")
+            setEnabledView(true)
+            if (gps?.hasLocationEnabled() == true) {
+                gps?.beginUpdates()
+                fusedLocation?.getSingleUpdate()
+            } else gps?.openSettings(activity)
+            return
+        }
         var bitmap: Bitmap = bmp
         val bmps = Utils.resize(bitmap, 1280, 1280)
         if (bmps != null) bitmap = bmps
@@ -1318,8 +1321,4 @@ class CameraFragment : Fragment(), CameraUpdate,
             sound.play(MediaActionSound.SHUTTER_CLICK)
         }
     }
-}
-
-interface CameraUpdate{
-    fun onBitmapTracking(bitmap: Bitmap?, imageProxy: ImageProxy)
 }
