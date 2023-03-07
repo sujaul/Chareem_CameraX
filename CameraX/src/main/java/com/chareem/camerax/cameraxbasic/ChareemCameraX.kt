@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -92,8 +93,10 @@ class ChareemCameraX{
             if (CameraHelper.hasCamera(context)) {
                 val permissions = ArrayList<String>()
                 permissions.add(Manifest.permission.CAMERA)
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
                 if (isUseTimestamp) {
                     permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
                     permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -150,8 +153,10 @@ class ChareemCameraX{
             if (CameraHelper.hasCamera(context)) {
                 val permissions = java.util.ArrayList<String>()
                 permissions.add(Manifest.permission.CAMERA)
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+                    permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
                 if (isUseTimestamp) {
                     permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
                     permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
