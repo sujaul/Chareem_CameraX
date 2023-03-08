@@ -39,10 +39,15 @@ class GalleryFragment internal constructor() : Fragment() {
 
     private val fragmentGalleryBinding get() = _fragmentGalleryBinding!!
 
-    /** AndroidX navigation arguments */
-    private val args: GalleryFragmentArgs by navArgs()
-
     private lateinit var mediaList: MutableList<File>
+
+    private var rootDirectory = ""
+    private var imgDirectory = ""
+
+    companion object{
+        val root_directory = "root_directory"
+        val img_directory = "img_directory"
+    }
 
     /** Adapter class used to present a fragment containing one photo or video as a page */
     inner class MediaPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -54,11 +59,14 @@ class GalleryFragment internal constructor() : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        rootDirectory = requireArguments().getString(root_directory) ?: ""
+        imgDirectory = requireArguments().getString(img_directory) ?: ""
+
         // Mark this as a retain fragment, so the lifecycle does not get restarted on config change
         retainInstance = true
 
         // Get root directory of media from navigation arguments
-        val rootDirectory = File(args.rootDirectory)
+        val rootDirectory = File(rootDirectory)
 
         // Walk through all files in the root directory
         // We reverse the order of the list to present the last photos first
@@ -79,7 +87,7 @@ class GalleryFragment internal constructor() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (args.imageDirectory.isEmpty()){
+        if (imgDirectory.isEmpty()){
             fragmentGalleryBinding.saveButton.isVisible = false
         }
 
@@ -192,7 +200,7 @@ class GalleryFragment internal constructor() : Fragment() {
             val resultIntent = Intent()
             resultIntent.putExtra(
                 CameraHelper.RESULT_PATH,
-                args.imageDirectory
+                imgDirectory
             )
             requireActivity().setResult(Activity.RESULT_OK, resultIntent)
             requireActivity().finish()

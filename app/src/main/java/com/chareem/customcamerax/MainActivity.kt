@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ChareemCameraX.with(this)
             .setCameraFacing(CameraHelper.FACING_BACK)
-            .setFaceDetection(true)
+            .setFaceDetection(false)
             .setImageName("imageku")
             .setMockDetection(false)
             .setTimeStamp(true)

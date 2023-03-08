@@ -182,9 +182,7 @@ class CameraFragment : Fragment(),
         // Make sure that all permissions are still present, since the
         // user could have removed them while the app was in paused state.
         if (!PermissionsFragment.hasPermissions(contexts)) {
-            Navigation.findNavController(activity, R.id.fragment_container).navigate(
-                CameraFragmentDirections.actionCameraToPermissions()
-            )
+            Navigation.findNavController(activity, R.id.fragment_container).navigate(R.id.permissions_fragment)
         } else {
             if (act.isUseTimeStamp()) {
                 if (gps == null)
@@ -679,10 +677,12 @@ class CameraFragment : Fragment(),
         cameraUiContainerBinding?.photoViewButton?.setOnClickListener {
             // Only navigate when the gallery has photos
             if (true == outputDirectory.listFiles()?.isNotEmpty()) {
+                val bundle = Bundle()
+                bundle.putString(GalleryFragment.root_directory, outputDirectory.absolutePath)
+                bundle.putString(GalleryFragment.img_directory, "")
                 Navigation.findNavController(
                     activity, R.id.fragment_container
-                ).navigate(CameraFragmentDirections
-                    .actionCameraToGallery(outputDirectory.absolutePath, ""))
+                ).navigate(R.id.gallery_fragment, bundle)
             }
         }
     }
@@ -1254,10 +1254,12 @@ class CameraFragment : Fragment(),
                     }
                     setGalleryThumbnail(savedUri)
                     if (true == outputDirectory.listFiles()?.isNotEmpty()) {
+                        val bundle = Bundle()
+                        bundle.putString(GalleryFragment.root_directory, outputDirectory.absolutePath)
+                        bundle.putString(GalleryFragment.img_directory, selectedImage)
                         Navigation.findNavController(
                             activity, R.id.fragment_container
-                        ).navigate(CameraFragmentDirections
-                            .actionCameraToGallery(outputDirectory.absolutePath, selectedImage))
+                        ).navigate(R.id.gallery_fragment, bundle)
                     }
                     setEnabledView(true)
                 })?.addOnFailureListener { e -> // Task failed with an exception
@@ -1289,10 +1291,12 @@ class CameraFragment : Fragment(),
                         return@saveBitmap
                     }
                 }
+                val bundle = Bundle()
+                bundle.putString(GalleryFragment.root_directory, outputDirectory.absolutePath)
+                bundle.putString(GalleryFragment.img_directory, selectedImage)
                 Navigation.findNavController(
                     activity, R.id.fragment_container
-                ).navigate(CameraFragmentDirections
-                    .actionCameraToGallery(outputDirectory.absolutePath, selectedImage))
+                ).navigate(R.id.gallery_fragment, bundle)
                 setEnabledView(true)
             } else setEnabledView(true)
         }
