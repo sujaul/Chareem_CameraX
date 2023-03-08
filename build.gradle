@@ -1,6 +1,6 @@
 buildscript {
     // Top-level variables used for versioning
-    ext.java_version = JavaVersion.VERSION_1_8
+    ext.java_version = JavaVersion.VERSION_11
 }
 
 plugins {
