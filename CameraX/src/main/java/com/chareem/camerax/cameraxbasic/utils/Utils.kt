@@ -47,21 +47,32 @@ object Utils{
     fun isMockLocationOn(
         location: Location
     ): Boolean {
-        return location.isFromMockProvider
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            location.isMock
+        } else {
+            location.isFromMockProvider
+        }
     }
 
-    fun getAddress(context: Context, lat: Double, lng: Double): Address? {
+    fun getAddress(context: Context, lat: Double, lng: Double, listener: (Address?) -> Unit) {
         try {
-            val locale = Locale.getDefault()
-            val geocoder = Geocoder(context, locale)
-            val addresses = geocoder.getFromLocation(
-                lat, lng, 1
-            )
-            return addresses[0]
-        } catch (e: Exception) {
+            val locale = Locale.getDefault();
+
+            val geocoder = Geocoder(context, locale);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                geocoder.getFromLocation(lat, lng, 1) {
+                    val obj = it.firstOrNull()
+                    listener.invoke(obj)
+                }
+            } else {
+                val obj = geocoder.getFromLocation(lat, lng, 1)?.firstOrNull()
+                listener.invoke(obj)
+            }
+        } catch (e : Exception) {
             e.printStackTrace()
+            listener.invoke(null)
         }
-        return null
     }
 
     fun getCurrentTimeStr(formatStr: String?): String? {

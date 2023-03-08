@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
             .setFaceDetection(true)
             .setImageName("imageku")
             .setMockDetection(false)
-            .setTimeStamp(false)
+            .setTimeStamp(true)
             .setResultCode(resCode)
             .setDirectoryName("apa/picture")
             .launchCamera()

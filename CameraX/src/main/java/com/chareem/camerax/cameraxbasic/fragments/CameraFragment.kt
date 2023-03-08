@@ -1117,7 +1117,7 @@ class CameraFragment : Fragment(),
     }
 
     private fun initLocation() {
-        val timeout = 60000
+        val timeout = 1000
         gps?.beginUpdates()
         gps?.setListener(object : SimpleLocation.Listener {
             override fun onPositionChanged() {
@@ -1132,7 +1132,7 @@ class CameraFragment : Fragment(),
                 setLocation()
             }
         })
-        fusedLocation = FusedLocation(contexts, true)
+        /*fusedLocation = FusedLocation(contexts, true)
         fusedLocation?.init()
         fusedLocation?.setTimeout(timeout)
         fusedLocation?.setListener(object : FusedLocation.Listener {
@@ -1155,10 +1155,11 @@ class CameraFragment : Fragment(),
                 Toast.makeText(contexts, "Time out get location", Toast.LENGTH_LONG).show()
             }
         })
-        fusedLocation?.getSingleUpdate()
+        fusedLocation?.getSingleUpdate()*/
     }
 
     private fun setLocation() {
+        Log.d("aaaaa", "llalala")
         if (currLat == "" || currLat == "0" || currLon == "" || currLon == "0") {
             Toast.makeText(
                 contexts,
@@ -1167,33 +1168,34 @@ class CameraFragment : Fragment(),
             ).show()
             return
         }
-        val address: Address? = Utils.getAddress(contexts, currLat.toDouble(), currLon.toDouble())
-        if (address != null) {
-            var text = ""
-            text += if (address.thoroughfare == null) "" else address.thoroughfare
-            text += "\n"
-            text += if (address.subLocality == null) "" else address.subLocality
-            text += " , "
-            text += if (address.locality == null) "" else address.locality
-            text += "\n"
-            text += if (address.postalCode == null) "" else address.postalCode
-            text += " , "
-            text += if (address.subAdminArea == null) "" else address.subAdminArea
-            text += "\n"
-            text += if (address.adminArea == null) "" else address.adminArea
-            text += " , "
-            text += if (address.countryName == null) "" else address.countryName
-            text += "\n"
-            text += "Lat : $currLat"
-            text += "\n"
-            text += "Lon : $currLon"
-            var text2 = ""
-            val tgl: String? = Utils.getCurrentTimeStr("dd MMM yyyy HH:mm:ss")
-            text2 += "\n"
-            text2 += tgl
-            this.addressText = text + text2
-            cameraUiContainerBinding?.locationTv?.text = text
-            cameraUiContainerBinding?.locationTv?.append(text2)
+        Utils.getAddress(contexts, currLat.toDouble(), currLon.toDouble()){address ->
+            if (address != null) {
+                var text = ""
+                text += if (address.thoroughfare == null) "" else address.thoroughfare
+                text += "\n"
+                text += if (address.subLocality == null) "" else address.subLocality
+                text += " , "
+                text += if (address.locality == null) "" else address.locality
+                text += "\n"
+                text += if (address.postalCode == null) "" else address.postalCode
+                text += " , "
+                text += if (address.subAdminArea == null) "" else address.subAdminArea
+                text += "\n"
+                text += if (address.adminArea == null) "" else address.adminArea
+                text += " , "
+                text += if (address.countryName == null) "" else address.countryName
+                text += "\n"
+                text += "Lat : $currLat"
+                text += "\n"
+                text += "Lon : $currLon"
+                var text2 = ""
+                val tgl: String? = Utils.getCurrentTimeStr("dd MMM yyyy HH:mm:ss")
+                text2 += "\n"
+                text2 += tgl
+                this.addressText = text + text2
+                cameraUiContainerBinding?.locationTv?.text = text
+                cameraUiContainerBinding?.locationTv?.append(text2)
+            }
         }
     }
 
