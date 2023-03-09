@@ -6,6 +6,10 @@ plugins {
     id 'maven-publish'
 }
 
+ext {
+    java_version = JavaVersion.VERSION_11
+}
+
 android {
     compileSdk 33
 
@@ -31,8 +35,12 @@ android {
         sourceCompatibility java_version
         targetCompatibility java_version
     }
+
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = java_version
+        freeCompilerArgs += [
+                '-Xjvm-default=enable'
+        ]
     }
 
     buildFeatures {

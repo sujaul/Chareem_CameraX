@@ -19,6 +19,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'maven-publish'
 
+ext {
+    java_version = JavaVersion.VERSION_11
+}
+
 android {
     compileSdkVersion 33
     defaultConfig {
@@ -34,11 +38,14 @@ android {
 
     compileOptions {
         sourceCompatibility java_version
-        targetCompatibility rootProject.ext.java_version
+        targetCompatibility java_version
     }
 
     kotlinOptions {
-        jvmTarget = rootProject.ext.java_version
+        jvmTarget = java_version
+        freeCompilerArgs += [
+                '-Xjvm-default=enable'
+        ]
     }
 
     buildTypes {
@@ -63,7 +70,7 @@ android {
 dependencies {
     // Kotlin lang
     implementation 'androidx.core:core-ktx:1.9.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
     // App compat and UI things
