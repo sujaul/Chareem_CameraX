@@ -19,21 +19,34 @@ package com.chareem.camerax.cameraxbasic.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
+import android.content.IntentSender;
 import android.os.Parcel;
 import android.os.Parcelable;
+import java.util.Random;
 import android.provider.Settings;
+import android.content.Intent;
+import android.os.Bundle;
+import android.location.LocationListener;
+import android.location.Location;
+import android.content.Context;
+import android.location.LocationManager;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import android.util.Log;
 
-import androidx.appcompat.app.AlertDialog;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 
-import java.util.Random;
+import org.jetbrains.annotations.NotNull;
 
 /** Utility class for easy access to the device location on Android */
 public class SimpleLocation {
@@ -59,6 +72,7 @@ public class SimpleLocation {
             longitude = lon;
         }
 
+        @NotNull
         @Override
         public String toString() {
             return "("+latitude+", "+longitude+")";
@@ -99,7 +113,8 @@ public class SimpleLocation {
     /** Callback that can be implemented in order to listen for events */
     public interface Listener {
 
-        void onPositionChanged();
+        /** Called whenever the device's position changes so that you can call {@link SimpleLocation#getPosition()} */
+        void onPositionChanged(Location location);
 
     }
 
@@ -406,8 +421,9 @@ public class SimpleLocation {
                 mPosition = location;
                 cachePosition();
 
+
                 if (mListener != null) {
-                    mListener.onPositionChanged();
+                    mListener.onPositionChanged(location);
                 }
             }
 
@@ -500,10 +516,6 @@ public class SimpleLocation {
         }
     }
 
-    public Location getLocation(){
-        return mPosition;
-    }
-
     /** Caches the current position */
     private void cachePosition() {
         if (mPosition != null) {
@@ -516,32 +528,31 @@ public class SimpleLocation {
      *
      * @param context the Context reference to start the Intent from
      */
-    public void openSettings(final Activity context) {
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+    public static void openSettings(final Context context) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
 
-            // Setting Dialog Title
-            alertDialog.setTitle("GPS is settings");
+        // Setting Dialog Title
+        alertDialog.setTitle("GPS is settings");
 
-            // Setting Dialog Message
-            alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+        // Setting Dialog Message
+        alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
 
-            // On pressing Settings button
-            alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog,int which) {
-                    context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                }
-            });
+        // On pressing Settings button
+        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int which) {
+                context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        });
 
-            // on pressing cancel button
-            alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                    context.finish();
-                }
-            });
+        // on pressing cancel button
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
 
-            // Showing Alert Message
-            alertDialog.show();
+        // Showing Alert Message
+        alertDialog.show();
     }
 
     public static void openDialogSetting(Activity act){
@@ -581,44 +592,22 @@ public class SimpleLocation {
     }
 
     public static void openDialogSetting2(Activity act){
-        SimpleLocation gps = new SimpleLocation(act);
-        if (!gps.hasLocationEnabled()) {
-            if (dialogs != null){
-                if (!dialogs.isShowing()) openSettings2(act);
+        try {
+            SimpleLocation gps = new SimpleLocation(act);
+            if (!gps.hasLocationEnabled()) {
+                if (dialogs != null){
+                    if (!dialogs.isShowing()) openSettings2(act);
+                } else {
+                    openSettings2(act);
+                }
             } else {
-                openSettings2(act);
+                if (dialogs != null) {if (dialogs.isShowing()) dialogs.dismiss(); dialogs = null;}
             }
-        } else {
-            if (dialogs != null) {if (dialogs.isShowing()) dialogs.dismiss(); dialogs = null;}
+        } catch (IllegalStateException | IllegalArgumentException e){
+            e.printStackTrace();
+        } catch (Exception e){
+            e.printStackTrace();
         }
-    }
-
-    public static void openSettings2(final Activity context) {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-        // Setting Dialog Title
-        alertDialog.setTitle("GPS is settings");
-
-        // Setting Dialog Message
-        alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
-
-        dialogs = alertDialog.create();
-        dialogs.setButton(DialogInterface.BUTTON_POSITIVE, "Settings", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                /*openSettings(context);*/
-                context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-            }
-        });
-        dialogs.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                context.finish();
-            }
-        });
-        dialogs.setCancelable(false);
-        dialogs.show();
-
-        // Showing Alert Message
     }
 
     /**
@@ -727,4 +716,59 @@ public class SimpleLocation {
         return results[0];
     }
 
+    public void openSettings(final Activity context) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+
+        // Setting Dialog Title
+        alertDialog.setTitle("GPS is settings");
+
+        // Setting Dialog Message
+        alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+
+        // On pressing Settings button
+        alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog,int which) {
+                context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        });
+
+        // on pressing cancel button
+        alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                context.finish();
+            }
+        });
+
+        // Showing Alert Message
+        alertDialog.show();
+    }
+
+    public static void openSettings2(final Activity context) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        // Setting Dialog Title
+        alertDialog.setTitle("GPS is settings");
+
+        // Setting Dialog Message
+        alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+
+        dialogs = alertDialog.create();
+        dialogs.setButton(DialogInterface.BUTTON_POSITIVE, "Settings", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                /*openSettings(context);*/
+                context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        });
+        dialogs.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                context.finish();
+            }
+        });
+        dialogs.setCancelable(false);
+        dialogs.show();
+
+        // Showing Alert Message
+    }
 }

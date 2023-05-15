@@ -55,8 +55,8 @@ class CameraXActivity : AppCompatActivity() {
             dirName = bundle.getString(CameraHelper.Arguments.DIR_NAME, "")
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         activityMainBinding.fragmentContainer.postDelayed({

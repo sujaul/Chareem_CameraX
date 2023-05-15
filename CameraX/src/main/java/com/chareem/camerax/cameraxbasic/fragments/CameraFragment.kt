@@ -53,6 +53,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.google.android.gms.location.*
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
@@ -84,7 +85,8 @@ typealias LumaListener = (luma: Double) -> Unit
  */
 class CameraFragment : Fragment(),
     CameraSoundView.OnSoundTypeChangeListener,
-    FlashSwitchView.FlashModeSwitchListener {
+    FlashSwitchView.FlashModeSwitchListener,
+    SimpleLocation.Listener{
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
 
@@ -121,11 +123,15 @@ class CameraFragment : Fragment(),
     private lateinit var cameraExecutor: ExecutorService
 
     private var gps: SimpleLocation? = null
-    private var fusedLocation: FusedLocation? = null
+    private var locationCallback : LocationCallback? = null
+    private var locationRequest : LocationRequest? = null
+    private var fusedLocationClient : FusedLocationProviderClient? = null
     private var currLat = ""
     private var currLon = ""
     private var soundType: Int = CameraSoundView.SOUND_TYPE_ON
     private var flashType: Int = FlashSwitchView.FLASH_AUTO
+    private var UPDATE_INTERVAL = 1000.toLong()
+    private val FASTEST_INTERVAL: Long = 20000
 
     /** Volume down button receiver used to trigger shutter */
     private val volumeDownReceiver = object : BroadcastReceiver() {
@@ -161,7 +167,14 @@ class CameraFragment : Fragment(),
         contexts = context
         activity = requireActivity()
         act = requireActivity() as CameraXActivity
-        /*requireActivity()
+        gps = SimpleLocation(contexts, false, false, UPDATE_INTERVAL, false)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
+        locationRequest = LocationRequest.create()
+        locationRequest?.interval = UPDATE_INTERVAL
+        locationRequest?.fastestInterval = FASTEST_INTERVAL
+        locationRequest?.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        locationRequest?.maxWaitTime = UPDATE_INTERVAL * 3
+    /*requireActivity()
             .onBackPressedDispatcher
             .addCallback(this, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -177,16 +190,14 @@ class CameraFragment : Fragment(),
             })*/
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         // Make sure that all permissions are still present, since the
         // user could have removed them while the app was in paused state.
         if (!PermissionsFragment.hasPermissions(contexts)) {
             Navigation.findNavController(activity, R.id.fragment_container).navigate(R.id.permissions_fragment)
         } else {
             if (act.isUseTimeStamp()) {
-                if (gps == null)
-                    gps = SimpleLocation(contexts, false, false, 1000, false)
                 gps?.let {
                     if (gps?.hasLocationEnabled() == true) {
                         initLocation()
@@ -200,6 +211,8 @@ class CameraFragment : Fragment(),
     override fun onDestroyView() {
         _fragmentCameraBinding = null
         super.onDestroyView()
+        gps?.endUpdates()
+        locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
 
         // Shut down our background executor
         cameraExecutor.shutdown()
@@ -207,6 +220,12 @@ class CameraFragment : Fragment(),
         // Unregister the broadcast receivers and listeners
         broadcastManager.unregisterReceiver(volumeDownReceiver)
         displayManager.unregisterDisplayListener(displayListener)
+    }
+
+    override fun onDestroy() {
+        gps?.endUpdates()
+        locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
+        super.onDestroy()
     }
 
     override fun onCreateView(
@@ -1116,56 +1135,50 @@ class CameraFragment : Fragment(),
             })
     }
 
-    private fun initLocation() {
-        val timeout = 1000
-        gps?.beginUpdates()
-        gps?.setListener(object : SimpleLocation.Listener {
-            override fun onPositionChanged() {
-                currLat = gps!!.latitude.toString() + ""
-                currLon = gps!!.longitude.toString() + ""
-                if (act.isUseMockDetection()) {
-                    if (Utils.isMockLocationOn(gps!!.location)) {
-                        showDialogMock(activity)
-                        return
-                    }
+    override fun onPositionChanged(location: Location?) {
+        location?.let {
+            if (act.isUseMockDetection()) {
+                if (Utils.isMockLocationOn(it)) {
+                    showDialogMock(activity)
+                    return
                 }
-                setLocation()
             }
-        })
-        /*fusedLocation = FusedLocation(contexts, true)
-        fusedLocation?.init()
-        fusedLocation?.setTimeout(timeout)
-        fusedLocation?.setListener(object : FusedLocation.Listener {
-            override fun onGetLocation(location: Location?) {
-                if (location != null) {
-                    currLat = location.latitude.toString() + ""
-                    currLon = location.longitude.toString() + ""
+            currLat = it.latitude.toString() + ""
+            currLon = it.longitude.toString() + ""
+            setLocation()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun initLocation() {
+        gps?.setBlurRadius(0)
+        gps?.beginUpdates()
+        gps?.setListener(this)
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                val location = locationResult.lastLocation
+                location?.let {
                     if (act.isUseMockDetection()) {
-                        if (Utils.isMockLocationOn(location)) {
+                        if (Utils.isMockLocationOn(it)) {
                             showDialogMock(activity)
                             return
                         }
                     }
+                    currLat = it.latitude.toString() + ""
+                    currLon = it.longitude.toString() + ""
                     setLocation()
-                } else Toast.makeText(contexts, "Failed get location", Toast.LENGTH_LONG)
-                    .show()
+                }
             }
-
-            override fun onTimeout() {
-                Toast.makeText(contexts, "Time out get location", Toast.LENGTH_LONG).show()
-            }
-        })
-        fusedLocation?.getSingleUpdate()*/
+        }
+        fusedLocationClient?.requestLocationUpdates(
+            locationRequest!!,
+            locationCallback!!,
+            Looper.getMainLooper())
     }
 
     private fun setLocation() {
-        Log.d("aaaaa", "llalala")
         if (currLat == "" || currLat == "0" || currLon == "" || currLon == "0") {
-            Toast.makeText(
-                contexts,
-                "Location not found, please check your GPS and Internet connection!!!",
-                Toast.LENGTH_LONG
-            ).show()
             return
         }
         Utils.getAddress(contexts, currLat.toDouble(), currLon.toDouble()){address ->
@@ -1210,7 +1223,10 @@ class CameraFragment : Fragment(),
         dialogsMock = alertDialogMock.create()
         dialogsMock?.setButton(
             DialogInterface.BUTTON_POSITIVE, "Close"
-        ) { dialog, which -> activity.finish() }
+        ) { dialog, which ->
+            dialogsMock?.dismiss()
+            activity.finish()
+        }
         /*dialogs.setButton(
             DialogInterface.BUTTON_NEGATIVE, "Cancel"
         ) { dialog: DialogInterface?, which: Int -> context.finish() }*/
@@ -1225,7 +1241,6 @@ class CameraFragment : Fragment(),
             setEnabledView(true)
             if (gps?.hasLocationEnabled() == true) {
                 gps?.beginUpdates()
-                fusedLocation?.getSingleUpdate()
             } else gps?.openSettings(activity)
             return
         }
